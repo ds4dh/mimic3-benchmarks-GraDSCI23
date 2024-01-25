@@ -94,7 +94,7 @@ def main():
         for task_id in range(n_tasks):
             print('Starting task {}'.format(task_id))
 
-            logreg = LogisticRegression(penalty=penalty, C=C, random_state=42)
+            logreg = LogisticRegression(penalty=penalty, C=C, solver='liblinear', random_state=42)
             logreg.fit(train_X, train_y[:, task_id])
 
             train_preds = logreg.predict_proba(train_X)

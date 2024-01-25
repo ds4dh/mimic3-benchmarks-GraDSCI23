@@ -5,6 +5,22 @@ import random
 
 from mimic3models.feature_extractor import extract_features
 
+def conv_float(x):
+    if (type(x) == str or type(x) == np.str_) and x == 'NEG':
+        x=np.NaN
+    if (type(x) == str or type(x) == np.str_) and x == '.':
+        x=np.NaN
+    if (type(x) == str or type(x) == np.str_) and x == 'TR':
+        x=np.NaN
+    if (type(x) == str or type(x) == np.str_) and 'Normal' in x :
+        x=0
+    if (type(x) == str or type(x) == np.str_) and 'Abnormal' in x:
+        x=1
+
+
+    return float(x)
+    
+    
 
 def convert_to_dict(data, header, channel_info):
     """ convert data from readers output in to array of arrays format """
@@ -13,8 +29,18 @@ def convert_to_dict(data, header, channel_info):
         ret[i-1] = [(t, x) for (t, x) in zip(data[:, 0], data[:, i]) if x != ""]
         channel = header[i]
         if len(channel_info[channel]['possible_values']) != 0:
-            ret[i-1] = list(map(lambda x: (x[0], channel_info[channel]['values'][x[1]]), ret[i-1]))
-        ret[i-1] = list(map(lambda x: (float(x[0]), float(x[1])), ret[i-1]))
+            # ret[i-1] = list(map(lambda x: (x[0], channel_info[channel]['values'][x[1]]), ret[i-1]))
+            for j in range(len(ret[i-1])):
+                try:
+                    ret[i-1][j] = (ret[i-1][j][0], channel_info[channel]['values'][ret[i-1][j][1]])
+                except:
+                    import pdb; pdb.set_trace()
+        # ret[i-1] = list(map(lambda x: (conv_float(x[0]), conv_float(x[1])), ret[i-1]))
+        for j in range(len(ret[i-1])):
+            try:
+                ret[i-1][j] = (conv_float(ret[i-1][j][0]), conv_float(ret[i-1][j][1]))
+            except:
+                import pdb; pdb.set_trace()            
     return ret
 
 

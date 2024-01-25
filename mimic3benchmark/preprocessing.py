@@ -72,9 +72,9 @@ diagnosis_labels = ['4019', '4280', '41401', '42731', '25000', '5849', '2724', '
 
 def extract_diagnosis_labels(diagnoses):
     global diagnosis_labels
-    diagnoses['value'] = 1
-    labels = diagnoses[['icustay_id', 'icd9_code', 'value']].drop_duplicates()\
-                      .pivot(index='icustay_id', columns='icd9_code', values='value').fillna(0).astype(int)
+    diagnoses['VALUE'] = 1
+    labels = diagnoses[['icustay_id', 'icd9_code', 'VALUE']].drop_duplicates()\
+                      .pivot(index='icustay_id', columns='icd9_code', values='VALUE').fillna(0).astype(int)
     for l in diagnosis_labels:
         if l not in labels:
             labels[l] = 0
@@ -94,8 +94,8 @@ def add_hcup_ccs_2015_groups(diagnoses, definitions):
 
 def make_phenotype_label_matrix(phenotypes, stays=None):
     phenotypes = phenotypes[['icustay_id', 'HCUP_CCS_2015']].loc[phenotypes.USE_IN_BENCHMARK > 0].drop_duplicates()
-    phenotypes['value'] = 1
-    phenotypes = phenotypes.pivot(index='icustay_id', columns='HCUP_CCS_2015', values='value')
+    phenotypes['VALUE'] = 1
+    phenotypes = phenotypes.pivot(index='icustay_id', columns='HCUP_CCS_2015', values='VALUE')
     if stays is not None:
         phenotypes = phenotypes.reindex(stays.icustay_id.sort_values())
     return phenotypes.fillna(0).astype(int).sort_index(axis=0).sort_index(axis=1)
@@ -142,7 +142,7 @@ def remove_outliers_for_variable(events, variable, ranges):
     v.loc[v > ranges.OUTLIER_HIGH[variable]] = np.nan
     v.loc[v < ranges.VALID_LOW[variable]] = ranges.VALID_LOW[variable]
     v.loc[v > ranges.VALID_HIGH[variable]] = ranges.VALID_HIGH[variable]
-    events.loc[idx, 'value'] = v
+    events.loc[idx, 'VALUE'] = v
     return events
 
 
@@ -169,6 +169,9 @@ def clean_crr(df):
     # when df.VALUE is empty, dtype can be float and comparision with string
     # raises an exception, to fix this we change dtype to str
     df_value_str = df.VALUE.astype(str)
+    # if  df  not empty string pdb.set_trace()
+    # if df_value_str.shape[0] > 0:
+    #     import pdb; pdb.set_trace()
 
     v.loc[(df_value_str == 'Normal <3 secs') | (df_value_str == 'Brisk')] = 0
     v.loc[(df_value_str == 'Abnormal >3 secs') | (df_value_str == 'Delayed')] = 1
@@ -280,7 +283,7 @@ def clean_events(events):
     for var_name, clean_fn in clean_fns.items():
         idx = (events.VARIABLE == var_name)
         try:
-            events.loc[idx, 'value'] = clean_fn(events[idx])
+            events.loc[idx, 'VALUE'] = clean_fn(events[idx])
         except Exception as e:
             import traceback
             print("Exception in clean_events:", clean_fn.__name__, e)
