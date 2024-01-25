@@ -57,14 +57,22 @@ def process_partition(args, definitions, code_to_group, id_to_group, group_to_id
                 icustay = label_df['Icustay'].iloc[0]
                 diagnoses_df = pd.read_csv(os.path.join(patient_folder, "diagnoses.csv"),
                                            dtype={"ICD9_CODE": str})
-                diagnoses_df = diagnoses_df[diagnoses_df.ICUSTAY_ID == icustay]
+                diagnoses_df = diagnoses_df[diagnoses_df.icustay_id == icustay]
+                count_error= 0
+                count_total = 0
                 for index, row in diagnoses_df.iterrows():
-                    if row['USE_IN_BENCHMARK']:
-                        code = row['ICD9_CODE']
+                    # if row['USE_IN_BENCHMARK']:
+                    code = row['icd9_code']
+                    code = str(code)
+                    # for some we need leading zeros to match the CSS code
+                    if code in code_to_group:
                         group = code_to_group[code]
-                        group_id = group_to_id[group]
-                        cur_labels[group_id] = 1
+                    else:
+                        code = code.zfill(len(code)+1)
+                        group = code_to_group[code]
 
+                    group_id = group_to_id[group]
+                    cur_labels[group_id] = 1
                 cur_labels = [x for (i, x) in enumerate(cur_labels)
                               if definitions[id_to_group[i]]['use_in_benchmark']]
 

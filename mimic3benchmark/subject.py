@@ -7,12 +7,12 @@ from mimic3benchmark.util import dataframe_from_csv
 
 def read_stays(subject_path):
     stays = dataframe_from_csv(os.path.join(subject_path, 'stays.csv'), index_col=None)
-    stays.INTIME = pd.to_datetime(stays.INTIME)
-    stays.OUTTIME = pd.to_datetime(stays.OUTTIME)
-    stays.DOB = pd.to_datetime(stays.DOB)
-    stays.DOD = pd.to_datetime(stays.DOD)
-    stays.DEATHTIME = pd.to_datetime(stays.DEATHTIME)
-    stays.sort_values(by=['INTIME', 'OUTTIME'], inplace=True)
+    stays.intime = pd.to_datetime(stays.intime)
+    stays.outtime = pd.to_datetime(stays.outtime)
+    stays.dob = pd.to_datetime(stays.dob)
+    stays.dod = pd.to_datetime(stays.dod)
+    stays.deathtime = pd.to_datetime(stays.deathtime)
+    stays.sort_values(by=['intime', 'outtime'], inplace=True)
     return stays
 
 
