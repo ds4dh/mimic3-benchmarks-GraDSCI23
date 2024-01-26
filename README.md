@@ -37,11 +37,22 @@ python -m mimic3benchmark.evaluation.evaluate_phenotyping data/phenotyping/train
 
 </code>
 </pre>
+
+# GNN training 
+
+## environment setup
+The libraries and python version are more recent than those used for the benchmark. Please raise an issue if you find difficulty in any of the steps below. 
+ 
+
+<pre><code>
+conda env create -f environment.
+conda activate cloned_env
+</code></pre>
+
 ## expert rules connectivity strategies 
 <pre><code>
 
 python -m gnn__models.connectivity_strategies.expert_graph_m1_exact
 python -m gnn__models.connectivity_strategies.expert_graph_m2_inter_category
 python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
-</code>
-</pre>
+</code></pre>
