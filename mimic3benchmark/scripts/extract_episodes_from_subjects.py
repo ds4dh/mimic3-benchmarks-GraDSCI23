@@ -32,14 +32,14 @@ for subject_dir in tqdm(os.listdir(args.subjects_root_path), desc='Iterating ove
     except:
         continue
 
-    try:
+    # try:
         # reading tables of this subject
-        stays = read_stays(os.path.join(args.subjects_root_path, subject_dir))
-        diagnoses = read_diagnoses(os.path.join(args.subjects_root_path, subject_dir))
-        events = read_events(os.path.join(args.subjects_root_path, subject_dir))
-    except:
-        sys.stderr.write('Error reading from disk for subject: {}\n'.format(subject_id))
-        continue
+    stays = read_stays(os.path.join(args.subjects_root_path, subject_dir))
+    diagnoses = read_diagnoses(os.path.join(args.subjects_root_path, subject_dir))
+    events = read_events(os.path.join(args.subjects_root_path, subject_dir))
+    # except:
+    #     sys.stderr.write('Error reading from disk for subject: {}\n'.format(subject_id))
+    #     continue
 
     episodic_data = assemble_episodic_data(stays, diagnoses)
 
@@ -53,9 +53,9 @@ for subject_dir in tqdm(os.listdir(args.subjects_root_path), desc='Iterating ove
 
     # extracting separate episodes
     for i in range(stays.shape[0]):
-        stay_id = stays.ICUSTAY_ID.iloc[i]
-        intime = stays.INTIME.iloc[i]
-        outtime = stays.OUTTIME.iloc[i]
+        stay_id = stays.icustay_id.iloc[i]
+        intime = stays.intime.iloc[i]
+        outtime = stays.outtime.iloc[i]
 
         episode = get_events_for_stay(timeseries, stay_id, intime, outtime)
         if episode.shape[0] == 0:

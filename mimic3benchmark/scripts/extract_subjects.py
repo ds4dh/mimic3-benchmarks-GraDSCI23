@@ -29,28 +29,28 @@ patients = read_patients_table(args.mimic3_path)
 admits = read_admissions_table(args.mimic3_path)
 stays = read_icustays_table(args.mimic3_path)
 if args.verbose:
-    print('START:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.ICUSTAY_ID.unique().shape[0],
-          stays.HADM_ID.unique().shape[0], stays.SUBJECT_ID.unique().shape[0]))
+    print('START:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.icustay_id.unique().shape[0],
+          stays.hadm_id.unique().shape[0], stays.subject_id.unique().shape[0]))
 
 stays = remove_icustays_with_transfers(stays)
 if args.verbose:
-    print('REMOVE ICU TRANSFERS:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.ICUSTAY_ID.unique().shape[0],
-          stays.HADM_ID.unique().shape[0], stays.SUBJECT_ID.unique().shape[0]))
+    print('REMOVE ICU TRANSFERS:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.icustay_id.unique().shape[0],
+          stays.hadm_id.unique().shape[0], stays.subject_id.unique().shape[0]))
 
 stays = merge_on_subject_admission(stays, admits)
 stays = merge_on_subject(stays, patients)
 stays = filter_admissions_on_nb_icustays(stays)
 if args.verbose:
-    print('REMOVE MULTIPLE STAYS PER ADMIT:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.ICUSTAY_ID.unique().shape[0],
-          stays.HADM_ID.unique().shape[0], stays.SUBJECT_ID.unique().shape[0]))
+    print('REMOVE MULTIPLE STAYS PER ADMIT:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.icustay_id.unique().shape[0],
+          stays.hadm_id.unique().shape[0], stays.subject_id.unique().shape[0]))
 
 stays = add_age_to_icustays(stays)
 stays = add_inunit_mortality_to_icustays(stays)
 stays = add_inhospital_mortality_to_icustays(stays)
 stays = filter_icustays_on_age(stays)
 if args.verbose:
-    print('REMOVE PATIENTS AGE < 18:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.ICUSTAY_ID.unique().shape[0],
-          stays.HADM_ID.unique().shape[0], stays.SUBJECT_ID.unique().shape[0]))
+    print('REMOVE PATIENTS AGE < 18:\n\tICUSTAY_IDs: {}\n\tHADM_IDs: {}\n\tSUBJECT_IDs: {}'.format(stays.icustay_id.unique().shape[0],
+          stays.hadm_id.unique().shape[0], stays.subject_id.unique().shape[0]))
 
 stays.to_csv(os.path.join(args.output_path, 'all_stays.csv'), index=False)
 diagnoses = read_icd_diagnoses_table(args.mimic3_path)
@@ -70,7 +70,7 @@ if args.test:
     args.event_tables = [args.event_tables[0]]
     print('Using only', stays.shape[0], 'stays and only', args.event_tables[0], 'table')
 
-subjects = stays.SUBJECT_ID.unique()
+subjects = stays.subject_id.unique()
 break_up_stays_by_subject(stays, args.output_path, subjects=subjects)
 break_up_diagnoses_by_subject(phenotypes, args.output_path, subjects=subjects)
 items_to_keep = set(

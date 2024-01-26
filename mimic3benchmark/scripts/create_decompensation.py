@@ -37,9 +37,9 @@ def process_partition(args, partition, sample_rate=1.0, shortest_length=4.0,
                     print("(length of stay is missing)", patient, ts_filename)
                     continue
 
-                stay = stays_df[stays_df.ICUSTAY_ID == label_df.iloc[0]['Icustay']]
-                deathtime = pd.to_datetime(stay['DEATHTIME'].iloc[0])
-                intime = pd.to_datetime(stay['INTIME'].iloc[0])
+                stay = stays_df[stays_df.icustay_id == label_df.iloc[0]['Icustay']]
+                deathtime = pd.to_datetime(stay['deathtime'].iloc[0])
+                intime = pd.to_datetime(stay['intime'].iloc[0])
                 if pd.isnull(deathtime):
                     lived_time = 1e18
                 else:

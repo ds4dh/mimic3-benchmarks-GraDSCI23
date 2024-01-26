@@ -50,7 +50,9 @@ def main():
         # TODO: maybe we can recover HADM_ID by looking at ICUSTAY_ID
         empty_hadm += events_df['HADM_ID'].isnull().sum()
         events_df = events_df.dropna(subset=['HADM_ID'])
-
+        # covert HADM_ID column to type int64 number like '111115.0' -> 111115
+        events_df['HADM_ID'] = events_df['HADM_ID'].astype(float).astype(int)
+        
         merged_df = events_df.merge(stays_df, left_on=['HADM_ID'], right_on=['HADM_ID'],
                                     how='left', suffixes=['', '_r'], indicator=True)
 

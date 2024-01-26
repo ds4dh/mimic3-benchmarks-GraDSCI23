@@ -51,8 +51,24 @@ def print_metrics_binary(y_true, predictions, verbose=1):
 def print_metrics_multilabel(y_true, predictions, verbose=1):
     y_true = np.array(y_true)
     predictions = np.array(predictions)
+    print("y_true.shape = {}".format(y_true.shape))
+    import pdb; pdb.set_trace()
 
-    auc_scores = metrics.roc_auc_score(y_true, predictions, average=None)
+    # sum axis 0 if there is at least one 0 then print 
+    if np.sum(y_true, axis=0) == 0:
+        print("y_true is all 0")
+        return None
+    # add one row with value one ones row
+    y_true = np.concatenate([y_true, np.ones((1, y_true.shape[1]))])
+    predictions = np.concatenate([predictions, np.ones((1, y_true.shape[1]))])
+    
+    # import pdb; pdb.set_trace()
+
+    print("y_true.shape = {}".format(y_true.shape))
+    try:
+        auc_scores = metrics.roc_auc_score(y_true, predictions, average=None)
+    except ValueError:
+        import pdb; pdb.set_trace()
     ave_auc_micro = metrics.roc_auc_score(y_true, predictions,
                                           average="micro")
     ave_auc_macro = metrics.roc_auc_score(y_true, predictions,
