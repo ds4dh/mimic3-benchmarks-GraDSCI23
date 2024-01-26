@@ -1,4 +1,7 @@
 # custom
+data/
+raw_data/
+
 .idea
 miscellaneous
 notebook
