@@ -61,9 +61,19 @@ python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
 ### Statistical moments 
 Dimensionality: 714 = 6 subperiods x 7 moments x 17 vital signs 
 <pre><code>
+conda activate mimic
+python -um mimic3models.phenotyping.logistic.main --output_dir mimic3models/phenotyping/logistic
 
 </code></pre>
 
 
 ### LSTM hidden space 
 Dimentionality: 256 from bidirectional LSTM 
+
+### create graphs 
+
+### GNN experiments 
+
+### Evaluation 
+
+### rare disease plot
