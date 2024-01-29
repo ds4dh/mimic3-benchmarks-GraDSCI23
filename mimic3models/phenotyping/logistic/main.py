@@ -1,3 +1,5 @@
+import shutil
+import pickle 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
@@ -79,6 +81,35 @@ def main():
     train_X = scaler.transform(train_X)
     val_X = scaler.transform(val_X)
     test_X = scaler.transform(test_X)
+
+    # create statistical_features data folder if not exists 
+    shutil.rmtree('data/phenotyping/statistical_features', )
+    STAT_FEATURES_FOLDER='data/phenotyping/statistical_features'
+    os.makedirs(STAT_FEATURES_FOLDER, exist_ok=True)
+    # save all features in statistical_features folder
+
+        
+    # Function to save data
+    def save_data(file_name, data):
+        with open(os.path.join(STAT_FEATURES_FOLDER, file_name), 'wb') as file:
+            pickle.dump(data, file)
+
+    # Save all features in statistical_features folder
+    save_data('train_X', train_X)
+    save_data('train_y', train_y)
+    save_data('train_names', train_names)
+    save_data('train_ts', train_ts)
+
+    save_data('val_X', val_X)
+    save_data('val_y', val_y)
+    save_data('val_names', val_names)
+    save_data('val_ts', val_ts)
+
+    save_data('test_X', test_X)
+    save_data('test_y', test_y)
+    save_data('test_names', test_names)
+    save_data('test_ts', test_ts)
+    # import pdb; pdb.set_trace()
 
     n_tasks = 25
     result_dir = os.path.join(args.output_dir, 'results')

@@ -56,3 +56,14 @@ python -m gnn__models.connectivity_strategies.expert_graph_m1_exact
 python -m gnn__models.connectivity_strategies.expert_graph_m2_inter_category
 python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
 </code></pre>
+
+## Node features 
+### Statistical moments 
+Dimensionality: 714 = 6 subperiods x 7 moments x 17 vital signs 
+<pre><code>
+
+</code></pre>
+
+
+### LSTM hidden space 
+Dimentionality: 256 from bidirectional LSTM 
