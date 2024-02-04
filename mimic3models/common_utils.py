@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import print_function
+
 import numpy as np
 import os
 import json
@@ -5,22 +8,6 @@ import random
 
 from mimic3models.feature_extractor import extract_features
 
-def conv_float(x):
-    if (type(x) == str or type(x) == np.str_) and x == 'NEG':
-        x=np.NaN
-    if (type(x) == str or type(x) == np.str_) and x == '.':
-        x=np.NaN
-    if (type(x) == str or type(x) == np.str_) and x == 'TR':
-        x=np.NaN
-    if (type(x) == str or type(x) == np.str_) and 'Normal' in x :
-        x=0
-    if (type(x) == str or type(x) == np.str_) and 'Abnormal' in x:
-        x=1
-
-
-    return float(x)
-    
-    
 
 def convert_to_dict(data, header, channel_info):
     """ convert data from readers output in to array of arrays format """
@@ -29,18 +16,8 @@ def convert_to_dict(data, header, channel_info):
         ret[i-1] = [(t, x) for (t, x) in zip(data[:, 0], data[:, i]) if x != ""]
         channel = header[i]
         if len(channel_info[channel]['possible_values']) != 0:
-            # ret[i-1] = list(map(lambda x: (x[0], channel_info[channel]['values'][x[1]]), ret[i-1]))
-            for j in range(len(ret[i-1])):
-                try:
-                    ret[i-1][j] = (ret[i-1][j][0], channel_info[channel]['values'][ret[i-1][j][1]])
-                except:
-                    import pdb; pdb.set_trace()
-        # ret[i-1] = list(map(lambda x: (conv_float(x[0]), conv_float(x[1])), ret[i-1]))
-        for j in range(len(ret[i-1])):
-            try:
-                ret[i-1][j] = (conv_float(ret[i-1][j][0]), conv_float(ret[i-1][j][1]))
-            except:
-                import pdb; pdb.set_trace()            
+            ret[i-1] = list(map(lambda x: (x[0], channel_info[channel]['values'][x[1]]), ret[i-1]))
+        ret[i-1] = list(map(lambda x: (float(x[0]), float(x[1])), ret[i-1]))
     return ret
 
 
@@ -92,20 +69,46 @@ def sort_and_shuffle(data, batch_size):
     return data
 
 
+def sort_tuple_list(data, reverse=True):
+    """ Newly added by Chengxi Zang, 2021/1/4, possible wrong in sort_and_shuffle for two shuffles
+    sort data by the length
+        data is tuple (X1, X2, ..., Xn) all of them have the same length.
+        Usually data = (X, y).
+    """
+    assert len(data) >= 2
+    data = list(zip(*data))
+    data.sort(key=(lambda x: x[0].shape[0]), reverse=reverse)
+    data = list(zip(*data))
+    return data
+
+
+def shuffle_tuple_list(data):
+    """ Newly added by Chengxi Zang, 2021/1/4, possible wrong in sort_and_shuffle for two shuffles
+        shuffle data by the length.
+            data is tuple (X1, X2, ..., Xn) all of them have the same length.
+            Usually data = (X, y).
+        """
+    assert len(data) >= 2
+    data = list(zip(*data))
+    random.shuffle(data)
+    data = list(zip(*data))
+    return data
+
+
 def add_common_arguments(parser):
     """ Add all the parameters which are common across the tasks
     """
-    parser.add_argument('--network', type=str, required=True)
+    parser.add_argument('--network', type=str, required=False, default='lstm')
     parser.add_argument('--dim', type=int, default=256,
                         help='number of hidden units')
     parser.add_argument('--depth', type=int, default=1,
                         help='number of bi-LSTMs')
-    parser.add_argument('--epochs', type=int, default=100,
+    parser.add_argument('--epochs', type=int, default=20,
                         help='number of chunks to train')
     parser.add_argument('--load_state', type=str, default="",
                         help='state file path')
     parser.add_argument('--mode', type=str, default="train",
-                        help='mode: train or test')
+                        help='mode: train or test or save')
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--l2', type=float, default=0, help='L2 regularization')
     parser.add_argument('--l1', type=float, default=0, help='L1 regularization')
@@ -124,7 +127,7 @@ def add_common_arguments(parser):
     parser.add_argument('--small_part', dest='small_part', action='store_true')
     parser.add_argument('--whole_data', dest='small_part', action='store_false')
     parser.add_argument('--optimizer', type=str, default='adam')
-    parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
+    parser.add_argument('--lr', type=float, default=0.0004, help='learning rate')
     parser.add_argument('--beta_1', type=float, default=0.9,
                         help='beta_1 param for Adam optimizer')
     parser.add_argument('--verbose', type=int, default=2)
