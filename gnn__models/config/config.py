@@ -264,7 +264,6 @@ from functools import partial
 import time
 import argparse
 import matplotlib.pyplot as plt
-import pytorch_lightning as pl
 import torch_geometric
 
 # from my

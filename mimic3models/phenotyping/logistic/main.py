@@ -83,7 +83,8 @@ def main():
     test_X = scaler.transform(test_X)
 
     # create statistical_features data folder if not exists 
-    shutil.rmtree('data/phenotyping/statistical_features', )
+
+    # shutil.rmtree('data/phenotyping/statistical_features', )
     STAT_FEATURES_FOLDER='data/phenotyping/statistical_features'
     os.makedirs(STAT_FEATURES_FOLDER, exist_ok=True)
     # save all features in statistical_features folder

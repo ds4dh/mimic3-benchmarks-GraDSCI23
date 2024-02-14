@@ -29,11 +29,17 @@ python -m mimic3benchmark.scripts.create_multitask data/root/ data/multitask/
 python -m mimic3models.split_train_val data/phenotyping
 
 python -um mimic3models.phenotyping.logistic.main --output_dir mimic3models/phenotyping/logistic
+# ls data/phenotyping/statistical_features 
+# test_X          test_ts         train_X         train_ts        val_X           val_ts
+# test_names      test_y          train_names     train_y         val_names       val_y
 
 # The libraries used for these LSTM are highly problematic and require specific version -> torch based equivalent of SCEHR has been used insted
 # python -um mimic3models.phenotyping.main --network mimic3models/keras_models/lstm.py --dim 256 --timestep 1.0 --depth 1 --dropout 0.3 --mode train --batch_size 8 --output_dir mimic3models/phenotyping
-
 python -m mimic3benchmark.evaluation.evaluate_phenotyping data/phenotyping/train data/phenotyping/train predictions/phenotyping/logistic train
+
+
+# alternative pytorch training of LSTM training and eval using SCEHR implementation
+python -m mimic3models.train_lstm --network mimic3models/lstm.py --data data/phenotyping/ --save
 
 </code>
 </pre>
@@ -42,12 +48,14 @@ python -m mimic3benchmark.evaluation.evaluate_phenotyping data/phenotyping/train
 
 ## environment setup
 The libraries and python version are more recent than those used for the benchmark. Please raise an issue if you find difficulty in any of the steps below. 
- 
-
-<pre><code>
-conda env create -f environment.
-conda activate cloned_env
-</code></pre>
+## create graphs
+python create_homogeneous_graphs.py --edge_strategy trivial --node_embeddings_type stat --folder_name graphs
+python create_homogeneous_graphs.py --edge_strategy random --node_embeddings_type stat --folder_name graphs
+python create_homogeneous_graphs.py --edge_strategy expert_exact --node_embeddings_type stat --folder_name graphs
+python create_homogeneous_graphs.py --edge_strategy knn_graph --node_embeddings_type stat --folder_name graphs
+python create_homogeneous_graphs.py --edge_strategy expert_medium --node_embeddings_type stat --folder_name graphs
+python create_homogeneous_graphs.py --edge_strategy expert_lenient --node_embeddings_type stat --folder_name graphs
+'random', 'expert_exact', 'expert_medium', 'expert_lenient', 'knn_graph', 'trivial' 
 
 ## expert rules connectivity strategies 
 <pre><code>
@@ -57,23 +65,7 @@ python -m gnn__models.connectivity_strategies.expert_graph_m2_inter_category
 python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
 </code></pre>
 
-## Node features 
-### Statistical moments 
-Dimensionality: 714 = 6 subperiods x 7 moments x 17 vital signs 
-<pre><code>
-conda activate mimic
-python -um mimic3models.phenotyping.logistic.main --output_dir mimic3models/phenotyping/logistic
 
-</code></pre>
+## Example gnn training 
+python train_gnn.py --model SAGEConv --data_folder graphs/data_trivial_stat/processed/ --epochs 1 --WD 0.001 --lr 0.0001 --hidden 8192 --batch_size 512 --model_name SAGEConv_nf_stat_es_knn_2011_05_19_13_55_26 --mode_training transductive --model_folder graph_model --experiment_name exp_v1_trivial_stat 
 
-
-### LSTM hidden space 
-Dimentionality: 256 from bidirectional LSTM 
-
-### create graphs 
-
-### GNN experiments 
-
-### Evaluation 
-
-### rare disease plot

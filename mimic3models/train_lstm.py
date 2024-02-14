@@ -1,16 +1,5 @@
 from __future__ import absolute_import
 from __future__ import print_function
-
-'''#python dp_
-# 
-# # https://github.com/calvin-zcx/SCEHR
-# # test  test_listfile.csv  train  train_listfile.csv  val_listfile.csv
-# copy main_BCE'''
-
-
-# PATH_DATA = '/home/dproios/work/create_EHR_gra/mimic3-benchmarks/data/phenotyping/'
-PATH_DATA = '/Users/dproios/work/mimic3-benchmarks-GraDSCI23/data/phenotyping/'
-
 from tqdm import tqdm
 import os
 import sys
@@ -30,8 +19,6 @@ import random
 
 from torch.utils.tensorboard import SummaryWriter
 
-# for linux env.
-# sys.path.insert(0, '../..')
 path_module = os.path.join('.','..')
 print(path_module)
 sys.path.append('../..') ## Needed for mimic3models
@@ -41,14 +28,9 @@ from mimic3benchmark.readers import PhenotypingReader
 from mimic3models.preprocessing import Discretizer, Normalizer
 from mimic3models import metrics
 from mimic3models import common_utils
-# from mimic3models.pytorch_models.lstm import LSTM_PT
-# from mimic3models.pytorch_models.losses import SupConLoss_MultiLabel, SupNCELoss, CBCE_loss, CBCE_WithLogitsLoss
-# from mimic3models.pytorch_models.torch_utils import Dataset, optimizer_to, model_summary, TimeDistributed, shuffle_within_labels,shuffle_time_dim
-
 from mimic3models.lstm import LSTM_PT
 from mimic3models.losses import SupConLoss_MultiLabel, SupNCELoss, CBCE_loss, CBCE_WithLogitsLoss
 from mimic3models.torch_utils import Dataset, optimizer_to, model_summary, TimeDistributed, shuffle_within_labels,shuffle_time_dim
-
 from mimic3models.time_report import TimeReport
 
 print = functools.partial(print, flush=True)
@@ -60,11 +42,11 @@ print('Timestamp: {}'.format(timestamp))
 parser = argparse.ArgumentParser()
 common_utils.add_common_arguments(parser)
 parser.add_argument('--target_repl_coef', type=float, default=0.0) 
-parser.add_argument('--data', type=str, help='Path to the data of phenotyping task', default = PATH_DATA)
+parser.add_argument('--data', type=str, help='Path to the data of phenotyping task', required=True)
 parser.add_argument('--output_dir', type=str, help='Directory relative which all output files are stored',                     default=f'./pytorch_states_{timestamp}/BCE/')
 # New added
 parser.add_argument('--seed', type=int, default=1, help='Random seed manually for reproducibility.')
-parser.add_argument('--hidden_folder', type=str, help='Path to the data of phenotyping task', default = f'/home/dproios/work/create_EHR_gra/mimic3-benchmarks/BCE_LSTM_{timestamp_only_day}/')
+parser.add_argument('--hidden_folder', type=str, help='Path to the data of phenotyping task', default = f'data/BCE_LSTM_{timestamp_only_day}/')
 parser.add_argument('--clip', type=float, default=0.25,
                     help='gradient clipping')
 parser.add_argument('--hidden_linear_dim', type=int, default=256)
@@ -76,23 +58,21 @@ parser.add_argument('--coef_contra_loss', type=float, default=0, help='CE + coef
 parser.add_argument('--weight_decay', type=float, default=0, help='weight_decay of adam')
 parser.add_argument('--final_act', type=str, default='sigmoid', help='sigmoid or softmax')
 args = parser.parse_args()
-print(args)
+# print(args)
+# for arg in vars(args):
+#     print(arg, getattr(args, arg))
+# print hidden_folder
+if not os.path.exists(args.hidden_folder):
+    os.makedirs(args.hidden_folder)
+    print(f'Created hidden folder: {args.hidden_folder}')
 
-# Set the random seed manually for reproducibility.
-# https://pytorch.org/docs/stable/notes/randomness.html
-# https://pytorch.org/docs/stable/generated/torch.set_deterministic.html#torch.set_deterministic
-# https://pytorch.org/docs/stable/generated/torch.nn.LSTM.html#torch.nn.LSTM
 np.random.seed(args.seed)
 random.seed(args.seed)
-
 torch.manual_seed(args.seed)  # cpu
 torch.cuda.manual_seed(args.seed)  # gpu
 torch.backends.cudnn.deterministic = True  # cudnn
 
-# Load data readers
 target_repl = (args.target_repl_coef > 0.0 and args.mode == 'train')
-# Build readers, discretizers, normalizers
-# import pdb; pdb.set_trace()
 train_reader = PhenotypingReader(dataset_dir=os.path.join(args.data, 'train'),
                                  listfile=os.path.join(args.data, 'train_listfile.csv'))
 
@@ -133,7 +113,7 @@ device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cp
 print('Using device: ', device)
 subfolder = timestamp + '_'.join([str(x) for x in (76, args.dim, args.depth, 25, args.dropout)])
 
-MNAME = f'runs_{timestamp_only_day}/runs_noclipgrad_{subfolder}'
+MNAME = f'runs_{timestamp_only_day}/runs_{subfolder}'
 writer = SummaryWriter(MNAME)
 
 # # Build the model
@@ -152,8 +132,6 @@ model = LSTM_PT(
     # final_act=nn.Sigmoid,#args.final_act,
     task='ph'
 )
-# else:
-#     raise NotImplementedError
 
 if target_repl:
     raise NotImplementedError
@@ -163,12 +141,9 @@ else:
 
     def get_loss(y_pre, labels, representation, alpha=0):
         # CBCE_WithLogitsLoss is more numerically stable than CBCE_Loss when model is complex/overfitting
-        try:
-            if y_pre.shape != labels.shape:
-                y_pre=y_pre.resize(*labels.shape)
-            loss = criterion_BCE(y_pre, labels)
-        except:
-            import pdb; pdb.set_trace()
+        if y_pre.shape != labels.shape:
+            y_pre=y_pre.resize(*labels.shape)
+        loss = criterion_BCE(y_pre, labels)
         if alpha > 0:
             if len(representation.shape) == 2:
                 representation = representation.unsqueeze(1)
@@ -199,9 +174,7 @@ if args.load_state != "":
     test_results = checkpoint['test_results']
     optimizer_to(optimizer, device)
     print("Load epoch: ", start_from_epoch, 'Load model: ', )
-    # print(model)
     print('Load model done!')
-    # n_trained_chunks = int(re.match(".*Epoch([0-9]+).*", args.load_state).group(1))
 
 model.to(device)
 try:
@@ -245,9 +218,7 @@ if args.mode == 'train':
         for i in tqdm(range(train_data_gen.steps)):  # tqdm
             
             BATCH_NAME = str(i)
-            # print("predicting {} / {}".format(i, train_data_gen.steps), end='\r')
             ret = next(train_data_gen)
-            # import pdb; pdb.set_trace() # TODO shuffling within labels
             X_batch_train, labels_batch_train, x_length = ret["data"]
             name_batch_train = ret["names"]
 
@@ -311,7 +282,6 @@ if args.mode == 'train':
 
             predicted_prob_val = torch.cat(predicted_prob_val, dim=0).cpu().detach().numpy()
             true_labels_val = torch.cat(true_labels_val, dim=0).cpu().detach().numpy()
-            ###
             val_result = metrics.print_metrics_multilabel(true_labels_val, predicted_prob_val, verbose=0)
             print(val_result)
             validation_results.append(val_result)
@@ -350,14 +320,11 @@ if args.mode == 'train':
             test_loss = np.mean(test_losses_batch)
             test_losses.append(test_loss)
 
-            try:
-                predicted_prob_test = torch.cat(predicted_prob_test, dim=0)
-                true_labels_test = torch.cat(true_labels_test, dim=0)  # with threshold 0.5, not used here
-                predictions_test = (predicted_prob_test.cpu().detach().numpy())
-                true_labels_test = true_labels_test.cpu().detach().numpy()
-                name_test = np.concatenate(name_test)
-            except:
-                import pdb; pdb.set_trace()
+            predicted_prob_test = torch.cat(predicted_prob_test, dim=0)
+            true_labels_test = torch.cat(true_labels_test, dim=0)  # with threshold 0.5, not used here
+            predictions_test = (predicted_prob_test.cpu().detach().numpy())
+            true_labels_test = true_labels_test.cpu().detach().numpy()
+            name_test = np.concatenate(name_test)
             test_result = metrics.print_metrics_multilabel(true_labels_test, predictions_test, verbose=1)
 
             print(test_result)
@@ -414,12 +381,8 @@ if args.mode == 'train':
         writer.add_scalar('Loss/test', test_loss, epoch)
         writer.add_scalar('Accuracy/train/val/macro ',val_result['ave_auc_macro'], epoch)
         # writer.add_scalar('Accuracy/test', np.random.random(), epoch)
-        
-        
     print('Training complete...')
     
-    
-        
     best_epoch = np.argmax([x['ave_auc_macro'] for x in validation_results])
     print('Best epoch: {}'.format(best_epoch))
 
@@ -460,10 +423,7 @@ if args.mode == 'train':
     ax.grid(which='minor', linestyle=':') #, linewidth='0.5', color='black')
     plt.grid()
     fig = ax.get_figure()
-    plt.ylim((0.74, 0.85))
-    plt.show()
-    fig.savefig(path + '.png')
-    # fig.savefig(path + '.pdf')
+    fig.savefig('results.png')
     r_all = {
         'model-name': model_names,
         'ave_auc_macro-val': [x['ave_auc_macro'] for x in validation_results],
@@ -474,12 +434,9 @@ if args.mode == 'train':
         'ave_auc_weighted-test': [x['ave_auc_weighted'] for x in test_results],
     }
     
-    
-
     pd_r_all = pd.DataFrame(data=r_all, index=range(1, len(validation_results) + 1))
-    pd_r_all.to_csv(path+'.csv')
+    pd_r_all.to_csv('results.csv')
     print('Dump', path + '[.png/.csv] done!')
-
 elif args.mode == 'test':
     print('Beginning testing...')
     start_time = time.time()
@@ -526,6 +483,7 @@ elif args.mode == 'test':
     print(results)
     print('Format print :.4f for results:')
     print(test_results)
+    # TODO
     # if boostrap:
     #     from utils import boostrap_interval_and_std
     #     pd_bst = boostrap_interval_and_std(predictions, true_labels, 100)
@@ -591,24 +549,22 @@ elif args.mode == 'save':
         hidden_folder = args.hidden_folder
 
         # Save as a .npy file
-
         results = metrics.print_metrics_multilabel(labels, predictions)
         print(results)
         
         # Save hidden states to a specified directory
         print('Saving hidden states to {}'.format(hidden_folder))
         os.makedirs(hidden_folder, exist_ok=True)
+        # saved in 
+        print('Saving hidden states to {}'.format(hidden_folder))
         np.save(os.path.join(args.hidden_folder, f"hidden_hn_{set}.npy"), hiddens_hn_concat)
         np.save(os.path.join(hidden_folder, f'labels_{set}.npy'), labels)
         np.save(os.path.join(hidden_folder, f'predictions_{set}.npy'), predictions)
+        np.save(os.path.join(hidden_folder, f'name_{set}.npy'), names)
 
         path = os.path.join(f"{set}_predictions", os.path.basename(args.load_state)) + ".csv"
         utils.save_results(names, ts, predictions, labels, path)
         h_, m_, s_ = TimeReport._hms(time.time() - start_time)
         print('{} set processing elapsed time: {:02d}h-{:02d}m-{:02d}s'.format(set.capitalize(), h_, m_, s_))
-
-
 else:
     raise ValueError("Wrong value for args.mode")
-
-
