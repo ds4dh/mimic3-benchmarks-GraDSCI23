@@ -49,6 +49,7 @@ python -m mimic3models.train_lstm --network mimic3models/lstm.py --data data/phe
 ## environment setup
 The libraries and python version are more recent than those used for the benchmark. Please raise an issue if you find difficulty in any of the steps below. 
 ## create graphs
+<pre><code>
 python create_homogeneous_graphs.py --edge_strategy trivial --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy random --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy expert_exact --node_embeddings_type stat --folder_name graphs
@@ -56,10 +57,9 @@ python create_homogeneous_graphs.py --edge_strategy knn_graph --node_embeddings_
 python create_homogeneous_graphs.py --edge_strategy expert_medium --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy expert_lenient --node_embeddings_type stat --folder_name graphs
 'random', 'expert_exact', 'expert_medium', 'expert_lenient', 'knn_graph', 'trivial' 
-
+</code></pre>
 ## expert rules connectivity strategies 
 <pre><code>
-
 python -m gnn__models.connectivity_strategies.expert_graph_m1_exact
 python -m gnn__models.connectivity_strategies.expert_graph_m2_inter_category
 python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
@@ -67,5 +67,6 @@ python -m gnn__models.connectivity_strategies.expert_graph_m3_intracategory
 
 
 ## Example gnn training 
+<pre><code>
 python train_gnn.py --model SAGEConv --data_folder graphs/data_trivial_stat/processed/ --epochs 1 --WD 0.001 --lr 0.0001 --hidden 8192 --batch_size 512 --model_name SAGEConv_nf_stat_es_knn_2011_05_19_13_55_26 --mode_training transductive --model_folder graph_model --experiment_name exp_v1_trivial_stat 
-
+</code></pre>
