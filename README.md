@@ -12,6 +12,7 @@ Source code for the implementation of the paper:
 <pre><code>
 conda create -n "mimic3" python=3.7.13
 conda activate mimic3
+pip install -r requirements.txt
 wget -r -N -c -np https://physionet.org/files/mimiciii-demo/1.4/ # this will create a physionet folder with the Database csvs
 python -m mimic3benchmark.scripts.extract_subjects physionet.org/files/mimiciii-demo/1.4/ data/root
 python -m mimic3benchmark.scripts.validate_events data/root/
@@ -38,7 +39,7 @@ python -um mimic3models.phenotyping.logistic.main --output_dir mimic3models/phen
 python -m mimic3benchmark.evaluation.evaluate_phenotyping data/phenotyping/train data/phenotyping/train predictions/phenotyping/logistic train
 
 
-# alternative pytorch training of LSTM training and eval using SCEHR implementation
+# We used an alternative pytorch training of LSTM training and eval using SCEHR implementation based on SCEHR
 python -m mimic3models.train_lstm --network mimic3models/lstm.py --data data/phenotyping/ --save
 
 </code>
@@ -48,8 +49,11 @@ python -m mimic3models.train_lstm --network mimic3models/lstm.py --data data/phe
 
 ## environment setup
 The libraries and python version are more recent than those used for the benchmark. Please raise an issue if you find difficulty in any of the steps below. 
+
+
 ## create graphs
 <pre><code>
+conda env create -f environment.yml
 python create_homogeneous_graphs.py --edge_strategy trivial --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy random --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy expert_exact --node_embeddings_type stat --folder_name graphs
