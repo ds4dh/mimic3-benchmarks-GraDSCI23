@@ -8,7 +8,7 @@ Source code for the implementation of the paper:
 - https://github.com/YerevaNN/mimic3-benchmarks
 
 
-## TLDR benchmark replication 
+## Benchmark replication 
 <pre><code>
 conda create -n "mimic3" python=3.7.13
 conda activate mimic3
