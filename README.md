@@ -53,7 +53,7 @@ The libraries and python version are more recent than those used for the benchma
 
 ## create graphs
 <pre><code>
-conda env create -f environment.yml
+conda env create -f environment.yaml
 python create_homogeneous_graphs.py --edge_strategy trivial --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy random --node_embeddings_type stat --folder_name graphs
 python create_homogeneous_graphs.py --edge_strategy expert_exact --node_embeddings_type stat --folder_name graphs
