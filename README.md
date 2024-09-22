@@ -1,4 +1,4 @@
-# Source code for the implementation of the paper: "Leveraging patient similarities via graph neural networks to predict phenotypes from temporal data"
+# Source code for the implementation of the paper: "Leveraging patient similarities via graph neural networks to predict phenotypes from temporal data" https://ieeexplore.ieee.org/document/10302556
 
 # replicate benchmark 
 1. This replication of this source code requires [MIMIC-III](https://physionet.org/content/mimiciii/1.4/) dataset. You will need to pass the following examination [CITI](https://physionet.org/about/citi-course/) to access the [Physionet ](https://physionet.org/) data repository: 
